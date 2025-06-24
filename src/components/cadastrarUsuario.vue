@@ -2,6 +2,9 @@
   <div class="register-app">
     <div class="register-container">
       <div class="register-card">
+        <!-- Botão de fechar -->
+        <button class="fechar-botao" @click="fechar">✖</button>
+
         <img src="https://img.freepik.com/free-vector/hand-drawn-flat-design-police-badge_23-2149344861.jpg" 
              alt="Logo PF" 
              class="register-logo">
@@ -37,10 +40,9 @@
               class="register-input"
             >
           </div>
-          <!-- Opcional: Adicionar campo para confirmar senha se desejar -->
-          
-          <button type="submit" class="register-button">
-            CRIAR CONTA
+
+          <button type="submit" class="register-button" :disabled="isLoading">
+            {{ isLoading ? 'Criando conta...' : 'CRIAR CONTA' }}
           </button>
         </form>
         
@@ -62,22 +64,22 @@ export default {
         email: '',
         password: ''
       },
-      // Dados dos pacotes para o checkout
       products: {
         pf_prf: { name: 'Pacote PF + PRF', price: 37.77 },
         pf: { name: 'Pacote Completo PF', price: 25.77 }
       },
-      isLoading: false // Para desativar o botão durante o processo
+      isLoading: false
     };
   },
   methods: {
+    fechar() {
+      this.$router.push('/'); // ou '/login' se preferir
+    },
     async handleRegister() {
-      this.isLoading = true; // Desativa o botão
+      this.isLoading = true;
       try {
-        // 1. Registra o novo usuário
         await this.$axios.post('/auth/register', this.form);
 
-        // 2. Faz o login automático para obter o token
         const loginResponse = await this.$axios.post('/auth/login', {
           email: this.form.email,
           password: this.form.password
@@ -85,17 +87,15 @@ export default {
         localStorage.setItem('authToken', loginResponse.token);
         localStorage.setItem('user', JSON.stringify(loginResponse.user));
 
-        // 3. Verifica qual produto foi selecionado (vindo da URL)
         const productCode = this.$route.query.product;
         const selectedProduct = this.products[productCode];
 
         if (!selectedProduct) {
-            alert("Pacote inválido. Redirecionando para o painel.");
-            this.$router.push('/user/dashboard');
-            return;
+          alert("Pacote inválido. Redirecionando para o painel.");
+          this.$router.push('/user/dashboard');
+          return;
         }
 
-        // 4. Cria a preferência de pagamento no Mercado Pago
         const preferenceResponse = await this.$axios.post('/mercadopago/create-preference', {
           items: [{
             title: selectedProduct.name,
@@ -104,28 +104,25 @@ export default {
           }],
           payerEmail: this.form.email
         });
-        
-        // 5. Redireciona o usuário para o checkout seguro do Mercado Pago
+
         if (preferenceResponse.sandbox_init_point) {
           window.location.href = preferenceResponse.sandbox_init_point;
         } else {
-            throw new Error("URL de checkout não recebida do servidor.");
+          throw new Error("URL de checkout não recebida do servidor.");
         }
 
       } catch (error) {
         const errorMessage = error.response?.data?.error || 'Não foi possível completar o processo. Tente novamente.';
         alert(`Erro: ${errorMessage}`);
       } finally {
-        this.isLoading = false; // Reativa o botão
+        this.isLoading = false;
       }
     }
   }
 }
 </script>
 
-
 <style scoped>
-/* Estilos EXATAMENTE IGUAIS aos da sua página de login para manter a consistência */
 .register-app {
   background-color: #0a0a1a;
   min-height: 100vh;
@@ -137,6 +134,7 @@ export default {
 .register-container {
   width: 100%;
   max-width: 400px;
+  position: relative;
 }
 .register-card {
   background: rgba(255, 255, 255, 0.05);
@@ -145,6 +143,18 @@ export default {
   padding: 30px;
   backdrop-filter: blur(5px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+.fechar-botao {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #ff9900;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1;
 }
 .register-logo {
   width: 80px;
@@ -203,6 +213,10 @@ export default {
   transition: all 0.3s;
   text-transform: uppercase;
   margin-top: 10px;
+}
+.register-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .register-footer {
   margin-top: 30px;

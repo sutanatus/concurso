@@ -2,12 +2,12 @@
   "name": "novocliente",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://sutanatus.github.io/novocliente",
+  "homepage": "https://sutanatus.github.io/concurso",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "deploy": "gh-pages -d dist --repo https://github.com/sutanatus/novocliente.git"
+    "deploy": "gh-pages -d dist --repo https://github.com/sutanatus/noconcurso.git"
   },
   "dependencies": {
     "apexcharts": "^4.7.0",

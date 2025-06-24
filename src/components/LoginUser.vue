@@ -2,6 +2,8 @@
   <div class="login-app">
     <div class="login-container">
       <div class="login-card">
+        <button class="fechar-botao" @click="fechar">✖</button>
+
         <img src="https://img.freepik.com/free-vector/hand-drawn-flat-design-police-badge_23-2149344861.jpg" 
              alt="Logo PF" 
              class="login-logo">
@@ -34,6 +36,11 @@
           <button type="submit" class="login-button">
             ENTRAR AGORA
           </button>
+
+          <!-- Botão visitante -->
+          <button @click="acessarVisitante" type="button" class="login-button visitor">
+            Acessar como visitante
+          </button>
         </form>
         
         <div class="login-footer">
@@ -49,7 +56,6 @@
 </template>
 
 <script>
-// Bloco SCRIPT ATUALIZADO
 export default {
   data() {
     return {
@@ -58,6 +64,9 @@ export default {
     }
   },
   methods: {
+    fechar() {
+      this.$router.push('/');
+    },
     async login() {
       try {
         const responseData = await this.$axios.post('/auth/login', {
@@ -65,32 +74,28 @@ export default {
           password: this.password
         });
 
-        // Guardamos o token e os dados do usuário
         localStorage.setItem('authToken', responseData.token);
         localStorage.setItem('user', JSON.stringify(responseData.user));
         
-        // --- AQUI ESTÁ A LÓGICA DE REDIRECIONAMENTO INTELIGENTE ---
-        // Verificamos a 'role' do usuário que veio do backend
         if (responseData.user.role === 'admin') {
-          // Se for admin, redireciona para o painel de admin
           this.$router.push('/admin/dashboard');
         } else {
-          // Se não for, redireciona para o painel de usuário normal
           this.$router.push('/user/dashboard');
         }
-        
       } catch (error) {
-        // Exibe a mensagem de erro específica do backend
         const errorMessage = error.response?.data?.error || 'Não foi possível fazer o login.';
         alert(errorMessage);
       }
+    },
+    acessarVisitante() {
+      // Aqui só redireciona direto para o dashboard do usuário, sem login
+      this.$router.push('/user/dashboard');
     }
   }
 }
 </script>
 
 <style scoped>
-/* O seu CSS continua o mesmo, sem alterações */
 .login-app {
   background-color: #0a0a1a;
   min-height: 100vh;
@@ -110,6 +115,18 @@ export default {
   padding: 30px;
   backdrop-filter: blur(5px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+.fechar-botao {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #ff9900;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1;
 }
 .login-logo {
   width: 80px;
@@ -185,6 +202,14 @@ export default {
 .login-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(255, 153, 0, 0.4);
+}
+.visitor {
+  background: transparent;
+  color: #ff9900;
+  border: 1px solid #ff9900;
+}
+.visitor:hover {
+  background-color: rgba(255, 153, 0, 0.1);
 }
 .login-footer {
   margin-top: 30px;

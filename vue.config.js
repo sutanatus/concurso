@@ -2,22 +2,16 @@ const { defineConfig } = require('@vue/cli-service')
 
 module.exports = defineConfig({
   transpileDependencies: true,
-  
+
   devServer: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: process.env.VUE_APP_API_URL || 'http://localhost:3000',
         changeOrigin: true,
         pathRewrite: { '^/api': '' },
-        // Adicione estas linhas para logs úteis:
-        onProxyReq: (proxyReq) => {
-          console.log(`Proxy: ${proxyReq.path} -> ${proxyReq.getHeader('host')}${proxyReq.path}`)
-        },
-        // Timeout aumentado para requisições pesadas
         proxyTimeout: 30000
       }
     },
-    // Adicione para melhor feedback no console
     client: {
       overlay: {
         warnings: false,
@@ -25,7 +19,11 @@ module.exports = defineConfig({
       }
     }
   },
-  
+
+  publicPath: process.env.NODE_ENV === 'production'
+    ? '/concurso/'  // <<--- ALTERE PARA O NOME EXATO DO SEU REPOSITÓRIO
+    : '/',
+
   css: {
     loaderOptions: {
       sass: {
@@ -36,15 +34,17 @@ module.exports = defineConfig({
       }
     }
   },
-  
-  publicPath: process.env.NODE_ENV === 'production'
-    ? '/flashcards-app/'
-    : '/',
-  
-  // Adicione esta configuração para melhor performance
+
   configureWebpack: {
     performance: {
       hints: process.env.NODE_ENV === 'production' ? 'warning' : false
     }
+  },
+
+  chainWebpack: config => {
+    config.plugin('html').tap(args => {
+      args[0].title = 'Meu App Vue' // Altere para seu título
+      return args
+    })
   }
 })
