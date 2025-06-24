@@ -38,7 +38,7 @@
           </button>
 
           <!-- Botão visitante -->
-          <button @click="acessarVisitante" type="button" class="login-button visitor">
+          <button @click="simularLogin" type="button" class="login-button visitor">
             Acessar como visitante
           </button>
         </form>
@@ -87,8 +87,13 @@ export default {
         alert(errorMessage);
       }
     },
-    acessarVisitante() {
-      // Aqui só redireciona direto para o dashboard do usuário, sem login
+    simularLogin() {
+      const fakeUser = {
+        username: 'Visitante',
+        role: 'user'
+      };
+      localStorage.setItem('authToken', 'fake-token');
+      localStorage.setItem('user', JSON.stringify(fakeUser));
       this.$router.push('/user/dashboard');
     }
   }
